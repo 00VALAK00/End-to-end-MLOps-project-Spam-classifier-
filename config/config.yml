@@ -1,0 +1,26 @@
+steps_root: steps
+pipeline_root : pipelines
+
+data_ingestion:
+  data_path: data/email-classification-nlp/
+  train_data_path: data/email-classification-nlp/SMS_train.csv
+  val_data_path: data/email-classification-nlp/SMS_test.csv
+
+data_validation:
+  schema:
+    Message_body: str
+    Label: str
+  label_values:
+    - Spam
+    - Non-Spam
+
+
+
+data_preprocessing:
+
+
+model_training:
+
+model_evaluation:
+
+

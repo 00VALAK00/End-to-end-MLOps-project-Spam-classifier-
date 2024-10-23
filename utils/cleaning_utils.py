@@ -2,6 +2,7 @@ import pandas as pd
 from string import punctuation
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from nltk.tokenize import word_tokenize
+from typing_extensions import Literal
 
 
 def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
@@ -11,12 +12,11 @@ def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
 def general_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     # Eliminate spaces and punctuations
     df["Message_body"] = df["Message_body"].str.lower()
-    df["Message_body"] = df["Message_body"].str.replace(to_replace="\s+",
-                                                        regex=True,
-                                                        value=" ")
+    df["Message_body"] = df["Message_body"].str.replace(r"\s+", " ",
+                                                        regex=True
+                                                        )
 
-    df["Message_body"] = df["Message_body"].str.replace(to_replace=punctuation,
-                                                        value="",
+    df["Message_body"] = df["Message_body"].str.replace(punctuation, "",
                                                         regex=True
                                                         )
 
@@ -42,24 +42,28 @@ def apply_stem(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def mask_urls_and_phone_numbers(df: pd.DataFrame) -> pd.DataFrame:
+def handle_urls_and_phone_numbers(df: pd.DataFrame, how: Literal["delete", "mask"] = "delete") -> pd.DataFrame:
     # replace urls and numbers by [URL] & [PHONE_NUMBER] tokens
     url_pattern = r'http\S+'
     phone_numbers_pattern = r'\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b|\b\d{10}\b'
-
-    df["Message_body"] = df["Message_body"].str.replace(url_pattern,
-                                                        "[URL]",
-                                                        regex=True)
-    df["Message_body"] = df["Message_body"].str.replace(url_pattern,
-                                                        "[PHONE_NUMBER]",
-                                                        regex=True)
+    if how == "delete":
+        df["Message_body"] = df["Message_body"].str.replace(url_pattern + "|" + phone_numbers_pattern,
+                                                            "",
+                                                            regex=True)
+    else:
+        df["Message_body"] = df["Message_body"].str.replace(url_pattern,
+                                                            "[URL]",
+                                                            regex=True)
+        df["Message_body"] = df["Message_body"].str.replace(url_pattern,
+                                                            "[PHONE_NUMBER]",
+                                                            regex=True)
     return df
 
 
-def pre_feature_engineering_preprocessing(df: pd.DataFrame) -> pd.DataFrame:
+def pre_feature_engineering_cleaning(df: pd.DataFrame, ) -> pd.DataFrame:
     df = handle_missing_values(df)
     df = general_cleaning(df)
-    df = mask_urls_and_phone_numbers(df)
+    df = handle_urls_and_phone_numbers(df, how="mask")
     df = apply_stem(df)
 
     return df

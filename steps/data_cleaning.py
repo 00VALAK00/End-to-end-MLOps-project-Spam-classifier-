@@ -1,16 +1,14 @@
-import pandas as pd
-from typing import List,Literal
-from pathlib import Path
-import sys
-parent_dir = Path(__file__).parent
-from zenml.logger import
-from utils.preprocessing_utils import pre_feature_engineering_preprocessing,post_feature_engineering_preprocessing
+from utils.cleaning_utils import *
 
 
+class DataCleaning:
+    def __init__(self, handle_url_numbers) -> None:
+        self.handle = handle_url_numbers
 
-class DataPreprocessor:
-    def __init__(self,mode=Literal["train","inference"]) -> None:
-        self.mode = mode
+    def pre_feature_engineering_cleaning(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = handle_missing_values(df)
+        df = general_cleaning(df)
+        df = handle_urls_and_phone_numbers(df, self.handle)
+        df = apply_stem(df)
 
-    def preprocess(self,df:pd.DataFrame) -> pd.DataFrame:
-        if self.mode == "inference":
+        return df
